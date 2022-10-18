@@ -1,0 +1,29 @@
+Resources:
+  #====================================
+  #
+  #        Default IAM Policy
+  #
+  #====================================
+
+  #=====         DEFAULT          =====
+  MushroomClassificationDefaultPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: mushroom-classification-default-policy
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'logs:CreateLogStream'
+              - 'logs:CreateLogGroup'
+            Resource: 'arn:aws:logs:${param:region}:${param:accountId}:log-group:/aws/lambda/mushroom-classification-api-${param:stage}*:*'
+          - Effect: Allow
+            Action:
+              - 'logs:PutLogEvents'
+            Resource: 'arn:aws:logs:${param:region}:${param:accountId}:log-group:/aws/lambda/mushroom-classification-api-${param:stage}*:*:*'
+          - Effect: Allow
+            Action:
+              - 'xray:PutTraceSegments'
+              - 'xray:PutTelemetryRecords'
+            Resource: '*'

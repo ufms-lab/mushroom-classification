@@ -1,0 +1,125 @@
+#====================================
+#
+#     Mushroom Classification API
+#
+#====================================
+
+service: mushroom-classification-api
+frameworkVersion: '3'
+useDotenv: true
+
+#====================================
+#
+#              Plugins
+#
+#====================================
+
+plugins:
+  - serverless-esbuild
+  - serverless-layers
+
+#====================================
+#
+#        Params configuration
+#
+#====================================
+
+params:
+  default:
+    accountId: ${env:TARGET_ACCOUNT_ID, 123456789012}
+    region: ${self:provider.region}
+    stage: ${self:provider.stage}
+
+#====================================
+#
+#        Provider configuration
+#
+#====================================
+
+provider:
+  name: aws
+  runtime: nodejs16.x
+  architecture: arm64
+  memorySize: 1024
+  versionFunctions: false
+  stage: ${opt:stage, 'local'}
+  region: ${opt:region, 'us-east-2'}
+  deploymentBucket:
+    name: ${env:BUCKET_DEVOPS}
+    serverSideEncryption: AES256
+  logRetentionInDays: ${env:CLOUDWATCH_RETENTION}
+  apiGateway:
+    metrics: true
+    disableDefaultEndpoint: true
+  tracing:
+    apiGateway: true
+    lambda: true
+  environment:
+    ENV: ${self:provider.stage}
+    REGION: ${self:provider.region}
+  iam:
+    role: GlobalRole
+
+#====================================
+#
+#        Package configuration
+#
+#====================================
+
+package:
+  individually: true
+  excludeDevDependencies: true
+  patterns:
+    - '!node_modules/**'
+
+#====================================
+#
+#        Custom configuration
+#       Plugins configurations
+#
+#====================================
+
+custom:
+  esbuild:
+    format: "cjs"
+    platform: "node"
+    target: "node16"
+    bundle: true
+    minify: true
+    sourcemap: false
+    plugins: ./esbuild.plugins.js
+    exclude: '*'
+    watch:
+      pattern:
+        - 'src/**/*.ts'
+
+#====================================
+#
+#         Functions (Lambda)
+#
+#====================================
+
+functions:
+  telegram-bot:
+    handler: ./src/bot/telegram/handler.main
+    environment:
+      TELEGRAM_TOKEN: ${env:TELEGRAM_TOKEN}
+    events:
+      - http:
+          method: POST
+          path: /telegram-bot
+          cors: true
+
+#====================================
+#
+#     Resources (CloudFormation)
+#
+#====================================
+
+resources:
+
+  ## IAM Policies
+  - ${file(resources/policy.yml)} # Policy
+
+  ## Global
+  - ${file(resources/role.yml)} # GlobalRole

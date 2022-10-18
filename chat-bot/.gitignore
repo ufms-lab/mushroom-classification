@@ -1,0 +1,18 @@
+# Ignoring all dot files
+.*
+
+# Except for
+!.github
+!.gitignore
+!.editorconfig
+!.gitmodules
+!.eslintrc
+!.prettierrc
+
+# Package directories
+node_modules/
+dist/
+build/
+
+# Serverless directories
+.serverless
