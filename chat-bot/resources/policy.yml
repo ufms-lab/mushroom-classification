@@ -9,7 +9,7 @@ Resources:
   MushroomClassificationDefaultPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
-      ManagedPolicyName: mushroom-classification-default-policy
+      ManagedPolicyName: mushroom-classification-${param:stage}-default-policy
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -27,3 +27,42 @@ Resources:
               - 'xray:PutTraceSegments'
               - 'xray:PutTelemetryRecords'
             Resource: '*'
+
+  #====================================
+  #
+  #        Lambda IAM Policy
+  #
+  #====================================
+
+  #=====         INVOKE           =====
+  MushroomClassificationLambdaInvokePolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: mushroom-classification-${param:stage}-lambda-invoke-policy
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - "lambda:InvokeFunction"
+              - "lambda:InvokeAsync"
+            Resource: arn:aws:lambda:${param:region}:*:*
+
+  #====================================
+  #
+  #           S3 IAM Policy
+  #
+  #====================================
+
+  #=====       GetObject          =====
+  MushroomClassificationS3GetObjectModelsMPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: mushroom-classification-${param:stage}-s3-getobject-models-policy
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - "s3:GetObject"
+            Resource: arn:aws:s3:::mushroom-classification-models/*

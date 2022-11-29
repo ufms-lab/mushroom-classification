@@ -1,14 +1,14 @@
 Resources:
   #====================================
   #
-  #          Global IAM Role
+  #       Telegram Bot IAM Role
   #
   #====================================
 
-  GlobalRole:
+  TelegramBotRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: mushroom-classification-global-role
+      RoleName: mushroom-classification-${param:stage}-telegram-bot-role
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -19,3 +19,26 @@ Resources:
             Action: sts:AssumeRole
       ManagedPolicyArns:
         - !Ref MushroomClassificationDefaultPolicy
+        - !Ref MushroomClassificationLambdaInvokePolicy
+
+  #====================================
+  #
+  #         Inference IAM Role
+  #
+  #====================================
+
+  InferenceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: mushroom-classification-${param:stage}-inference-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - !Ref MushroomClassificationDefaultPolicy
+        - !Ref MushroomClassificationS3GetObjectModelsMPolicy

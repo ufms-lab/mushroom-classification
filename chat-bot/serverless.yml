@@ -39,7 +39,6 @@ params:
 provider:
   name: aws
   runtime: nodejs16.x
-  architecture: arm64
   memorySize: 1024
   versionFunctions: false
   stage: ${opt:stage, 'local'}
@@ -57,8 +56,10 @@ provider:
   environment:
     ENV: ${self:provider.stage}
     REGION: ${self:provider.region}
-  iam:
-    role: GlobalRole
+  ecr:
+    images:
+      inference:
+        path: ./src/inference
 
 #====================================
 #
@@ -80,6 +81,9 @@ package:
 #====================================
 
 custom:
+  serverless-layers:
+    functions:
+      - telegram-bot
   esbuild:
     format: "cjs"
     platform: "node"
@@ -101,7 +105,9 @@ custom:
 
 functions:
   telegram-bot:
-    handler: ./src/bot/telegram/handler.main
+    handler: ./src/telegram-bot/handler.main
+    role: TelegramBotRole
+    timeout: 30
     environment:
       TELEGRAM_TOKEN: ${env:TELEGRAM_TOKEN}
     events:
@@ -109,6 +115,12 @@ functions:
           method: POST
           path: /telegram-bot
           cors: true
+
+  inference:
+    image:
+      name: inference
+    role: InferenceRole
+    timeout: 900
 
 #====================================
 #
